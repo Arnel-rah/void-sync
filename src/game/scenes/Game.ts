@@ -1,35 +1,54 @@
-import { Scene } from 'phaser';
+import { Scene } from "phaser";
 
-export class Game extends Scene
-{
-    camera: Phaser.Cameras.Scene2D.Camera;
-    background: Phaser.GameObjects.Image;
-    msg_text : Phaser.GameObjects.Text;
+export class Game extends Scene {
+  private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private readonly SPEED = 300;
 
-    constructor ()
-    {
-        super('Game');
+  constructor() {
+    super("Game");
+  }
+
+  create() {
+    this.add
+      .text(512, 384, "VOID-SYNC : STANDBY", {
+        fontSize: "24px",
+        color: "#ffffff",
+        fontFamily: "monospace",
+      })
+      .setOrigin(0.5)
+      .setAlpha(0.5);
+
+    if (!this.textures.exists("temp-player")) {
+      const graphics = this.make.graphics({ x: 0, y: 0 }, false);
+
+      graphics.fillStyle(0xffffff);
+      graphics.fillRect(0, 0, 32, 32);
+      graphics.generateTexture("temp-player", 32, 32);
+      graphics.destroy();
     }
-
-    create ()
-    {
-        this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
-
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
-
-        this.msg_text = this.add.text(512, 384, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        });
-        this.msg_text.setOrigin(0.5);
-
-        this.input.once('pointerdown', () => {
-
-            this.scene.start('GameOver');
-
-        });
+    this.player = this.physics.add.sprite(512, 384, "temp-player");
+    this.player.setCollideWorldBounds(true);
+    this.player.setDamping(true);
+    this.player.setDrag(0.1);
+    if (this.input.keyboard) {
+      this.cursors = this.input.keyboard.createCursorKeys();
     }
+  }
+
+  update() {
+    if (!this.cursors) return;
+    const movement = new Phaser.Math.Vector2(0, 0);
+    if (this.cursors.left.isDown) movement.x = -1;
+    else if (this.cursors.right.isDown) movement.x = 1;
+
+    if (this.cursors.up.isDown) movement.y = -1;
+    else if (this.cursors.down.isDown) movement.y = 1;
+    if (movement.length() > 0) {
+      movement.normalize().scale(this.SPEED);
+      this.player.setVelocity(movement.x, movement.y);
+    } else {
+      this.player.setVelocity(0, 0);
+    }
+  }
 }
