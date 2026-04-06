@@ -13,6 +13,14 @@ const config: Phaser.Types.Core.GameConfig = {
     height: 768,
     parent: 'game-container',
     backgroundColor: '#028af8',
+    // Ajout du moteur physique Arcade
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { x: 0, y: 0 },
+            debug: true
+        }
+    },
     scene: [
         Boot,
         Preloader,
